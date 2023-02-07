@@ -1,11 +1,13 @@
-## environment preparation
+This cloud functions code is picking up csv files when uploaded to a bucket and loads them into a BigQuery table.
+
+## Environment Preparation
 ```
 gcloud storage buckets create gs://bucket-csv-loader
 bq mk dataset_csv_loader
 ```
 
 
-## deployment
+## Deployment
 
 ```
 
@@ -16,7 +18,7 @@ gcloud functions deploy function-csv-loader
 
 ```
 
-## testing
+## Testing
 ```
 gcloud functions describe function-csv-loader
 gsutil cp tabela.csv gs://bucket-csv-loader/
@@ -24,7 +26,7 @@ gsutil cp tabela.csv gs://bucket-csv-loader/
 bq query --nouse_legacy_sql 'SELECT count(*) FROM `project_id.dataset_csv_loader.tabela`'
 ```
 
-## cleanup
+## Cleanup
 ```
 gcloud storage buckets delete gs://bucket-csv-loader
 bq rm dataset_csv_loader
