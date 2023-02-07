@@ -1,0 +1,32 @@
+## environment preparation
+```
+gcloud storage buckets create gs://bucket-csv-loader
+bq mk dataset_csv_loader
+```
+
+
+## deployment
+
+```
+
+# first deployment
+gcloud functions deploy function-csv-loader2 --env-vars-file .env.yaml --runtime python310 --trigger-bucket gs://bucket-csv-loader --entry-point load_csv --memory 128MB
+# re-deployment
+gcloud functions deploy function-csv-loader
+
+```
+
+## testing
+```
+gcloud functions describe function-csv-loader
+gsutil cp tabela.csv gs://bucket-csv-loader/
+...wait
+bq query --nouse_legacy_sql 'SELECT count(*) FROM `project_id.dataset_csv_loader.tabela`'
+```
+
+## cleanup
+```
+gcloud storage buckets delete gs://bucket-csv-loader
+bq rm dataset_csv_loader
+gcloud functions delete function-csv-loader
+```
