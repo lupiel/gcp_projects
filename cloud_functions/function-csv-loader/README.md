@@ -2,6 +2,9 @@ This cloud functions code is picking up csv files when uploaded to a bucket and 
 
 ## Environment Preparation
 ```
+gcloud auth login
+gcloud config set project natural-nebula-377015
+
 gcloud storage buckets create gs://bucket-csv-loader
 bq mk dataset_csv_loader
 ```
@@ -23,7 +26,12 @@ gcloud functions deploy function-csv-loader
 gcloud functions describe function-csv-loader
 gsutil cp tabela.csv gs://bucket-csv-loader/
 ...wait
-bq query --nouse_legacy_sql 'SELECT count(*) FROM `project_id.dataset_csv_loader.tabela`'
+bq query --nouse_legacy_sql 'SELECT count(*) FROM `natural-nebula-377015.dataset_csv_loader.tabela`'
++-----+
+| f0_ |
++-----+
+|   2 |
++-----+
 ```
 
 ## Cleanup
