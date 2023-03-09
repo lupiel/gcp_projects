@@ -1,8 +1,8 @@
 [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/lupiel/gcp_snippets)
 
 ```
-BUCKET = bucket-lp-us-central1
-REGION = us-central1
+BUCKET=bucket-lp-us-central1
+REGION=us-central1
 
 cd cloud_functions/v2/cloud_storage
 ```
