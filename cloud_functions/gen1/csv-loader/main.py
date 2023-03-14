@@ -1,22 +1,44 @@
-import pandas as pd
-
-import json, os
-
 from datetime import datetime
 from typing import List, Dict
 from google.cloud import bigquery
 from google.cloud import storage
 from google.cloud.exceptions import NotFound
 
+import pandas as pd
+import json, os
+
 PROJECT = os.environ.get("PROJECT", "PROJECT env var not set")
 DATASET = os.environ.get("DATASET", "DATASET env var not set")
 INBOX_DIR = os.environ.get("INBOX_DIR", "INBOX_DIR env var not set")
-LOAD_TIMESTAMP = datetime.now()
 
-print("PROJECT:", PROJECT)
-print("DATASET:", DATASET)
-print("INBOX_DIR:", INBOX_DIR)
-print("LOAD_TIMESTAMP:", LOAD_TIMESTAMP)
+def get_archive_ext_table(table_name: str, dataset: str, project: str, bucket: str, directory: str):
+    """
+        python -c 'from main import get_archive_ext_table; print(get_archive_ext_table("ext_product_dim", "dataset_csv_loader", "natural-nebula-377015", "bucket-csv-loader", "cloud_functions/csv-loader/archive/product_dim"))'
+    """
+    columns_lst = []
+    with open("tables.json", "r") as f:
+        for field in json.load(f)[table_name]["columns"]:
+            if field["name"] != "load_timestamp":
+                columns_lst.append(f"{field['name']} {field['field_type']},")
+
+    columns_ddl = "\n\t".join(columns_lst)
+
+    table_ddl = f"""
+CREATE EXTERNAL TABLE `{project}.{dataset}.{table_name}`
+(
+\t{columns_ddl}
+)
+OPTIONS(
+  skip_leading_rows=1,
+  format="CSV",
+  uris=["gs://{bucket}/{directory}/*"]
+)
+;
+
+SELECT *, _FILE_NAME FROM `{project}.{dataset}.{table_name}` LIMIT 1000
+;
+"""
+    return table_ddl
 
 def get_schema(table_name: str) -> List[bigquery.SchemaField]:
     """
@@ -34,6 +56,7 @@ def get_key(table_name: str) -> List[str]:
         python -c 'from main import get_key; print(get_key("product_dim"))'
     """
     with open("tables.json", "r") as f:
+        print(table_name)        
         return json.load(f)[table_name]["scope_key"]
 
 
@@ -112,7 +135,7 @@ def insert_dataframe_to_bigquery(df: pd.DataFrame, table_name: str):
 
     print(f"Insert completed. Rows: {df.shape[0]} Table: {table_id}")
 
-def reload_scope(table_name: str, uri: str):
+def reload_scope(table_name: str, uri: str, load_timestamp: datetime):
     """
         export PROJECT=natural-nebula-377015
         export DATASET=dataset_csv_loader
@@ -128,7 +151,7 @@ def reload_scope(table_name: str, uri: str):
     if len(df[key_columns].drop_duplicates(subset=key_columns)) > 1:
         raise ValueError(f"File key columns have multiple values.")
     
-    df = df.assign(load_timestamp=LOAD_TIMESTAMP)
+    df = df.assign(load_timestamp=load_timestamp)
 
     delete_scope_from_bigquery(table_name, scope_col=key_columns, scope_val=key_values)
     insert_dataframe_to_bigquery(df=df, table_name=table_name)
@@ -138,19 +161,25 @@ def main(event, context):
     Args:
         event (dict): Event payload.
         context (google.cloud.functions.Context): Metadata for the event.
-    """
-    print(f"Processing event: {event}.")
-    print(f"Processing context: {context}.")
 
+    export PROJECT=natural-nebula-377015
+    export DATASET=dataset_csv_loader
+    export INBOX_DIR=cloud_functions/csv-loader/inbox
+    gsutil cp data/product_dim_1.csv gs://bucket-csv-loader/cloud_functions/csv-loader/inbox/product_dim/product_dim_1.csv
+    python -c 'from main import main; main({"bucket": "bucket-csv-loader", "name": "cloud_functions/csv-loader/inbox/product_dim/product_dim_1.csv"}, {})'
+    """
+    LOAD_TIMESTAMP = datetime.now()
     BUCKET_NAME = event["bucket"]
     FILE_NAME = event["name"]
+
     if not FILE_NAME.startswith(INBOX_DIR):
         print(f"File {FILE_NAME} not tracked.")
         return
 
     # cloud_functions/csv-loader-v2/inbox/TABLE_NAME/data.csv
-    TABLE_NAME = FILE_NAME[len(INBOX_DIR):].split("/")[0]
+    TABLE_NAME = FILE_NAME[len(INBOX_DIR)+1:].split("/")[0]
     URI = f"gs://{BUCKET_NAME}/{FILE_NAME}"
-
-    reload_scope(table_name=TABLE_NAME, uri=URI)
+    print("TABLE_NAME:", TABLE_NAME)
+    print("URI:", URI)
+    reload_scope(table_name=TABLE_NAME, uri=URI, load_timestamp=LOAD_TIMESTAMP)
     mv_archive(bucket_name=BUCKET_NAME, file_name=FILE_NAME, load_timestamp=LOAD_TIMESTAMP)
