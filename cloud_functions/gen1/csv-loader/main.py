@@ -5,7 +5,8 @@ from google.cloud import storage
 from google.cloud.exceptions import NotFound
 
 import pandas as pd
-import json, os
+import json, os, traceback
+
 
 PROJECT = os.environ.get("PROJECT", "PROJECT env var not set")
 DATASET = os.environ.get("DATASET", "DATASET env var not set")
@@ -181,5 +182,12 @@ def main(event, context):
     URI = f"gs://{BUCKET_NAME}/{FILE_NAME}"
     print("TABLE_NAME:", TABLE_NAME)
     print("URI:", URI)
-    reload_scope(table_name=TABLE_NAME, uri=URI, load_timestamp=LOAD_TIMESTAMP)
-    mv_archive(bucket_name=BUCKET_NAME, file_name=FILE_NAME, load_timestamp=LOAD_TIMESTAMP)
+    
+    try:
+        reload_scope(table_name=TABLE_NAME, uri=URI, load_timestamp=LOAD_TIMESTAMP)
+        mv_archive(bucket_name=BUCKET_NAME, file_name=FILE_NAME, load_timestamp=LOAD_TIMESTAMP)
+    except Exception:
+            exc = traceback.format_exc()
+            LOG_URI = f"{INBOX_DIR}/log/{TABLE_NAME}/{FILE_NAME}_{LOAD_TIMESTAMP}.txt"
+            print(f'Error tracebak uploaded to {BUCKET_NAME}/{LOG_URI}')
+            storage.Client().get_bucket(BUCKET_NAME).blob(LOG_URI).upload_from_string(exc)
