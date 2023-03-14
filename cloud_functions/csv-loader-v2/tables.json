@@ -1,0 +1,24 @@
+{
+    "product_dim": {
+        "columns" : [
+            {"name": "col1", "field_type": "STRING"},
+            {"name": "col2", "field_type": "INTEGER"},
+            {"name": "col3", "field_type": "FLOAT"},
+            {"name": "load_timestamp", "field_type": "TIMESTAMP"}
+        ],
+        "scope_key": [
+            "col1", "col2"
+        ]
+    },
+    "customer_dim": {
+        "columns" : [
+            {"name": "col1", "field_type": "STRING"},
+            {"name": "col2", "field_type": "INTEGER"},
+            {"name": "col3", "field_type": "FLOAT"},
+            {"name": "load_timestamp", "field_type": "TIMESTAMP"}
+        ],
+        "scope_key": [
+            "col1", "col2", "col3"
+        ]
+    }
+}

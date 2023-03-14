@@ -1,0 +1,8 @@
+# Function dependencies, for example:
+# package>=version
+google-cloud-bigquery
+google-cloud-storage
+pandas #pd.get_csv(uri)
+gcsfs  #pd.get_csv(uri)
+fsspec #pd.get_csv(uri)
+pyarrow #load_table_from_dataframe
