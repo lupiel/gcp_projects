@@ -139,6 +139,28 @@ gs://bucket-csv-loader/cloud_functions/csv-loader/archive/product_dim/product_di
 ```
 
 
+```
+gsutil cp data/product_dim_4.csv gs://$BUCKET/cloud_functions/csv-loader/inbox/product_dim/
+...wait
+gcloud beta functions logs read $FUNCTION_NAME --limit=5
+
+............................................................
+LOG: Error tracebak uploaded to gs://bucket-csv-loader/cloud_functions/csv-loader/log/product_dim/cloud_functions/csv-loader/inbox/product_dim/product_dim_4.csv_2023-03-14 15:57:06.984577.txt
+
+LOG: File cloud_functions/csv-loader/log/product_dim/cloud_functions/csv-loader/inbox/product_dim/product_dim_4.csv_2023-03-14 15:57:06.984577.txt not tracked.
+............................................................
+
+gsutil ls -r gs://$BUCKET/cloud_functions/csv-loader/**
+gs://bucket-csv-loader/cloud_functions/csv-loader/archive/product_dim/product_dim_1.csv_20230314_135042_484152
+gs://bucket-csv-loader/cloud_functions/csv-loader/archive/product_dim/product_dim_2.csv_20230314_143926_285578
+gs://bucket-csv-loader/cloud_functions/csv-loader/archive/product_dim/product_dim_3.csv_20230314_144048_524480
+gs://bucket-csv-loader/cloud_functions/csv-loader/log/product_dim/product_dim_4.csv_20230314_144048_524480.txt
+
+
+gsutil cp "gs://bucket-csv-loader/cloud_functions/csv-loader/log/product_dim/product_dim_4.csv_20230314_144048_524480" - | tail -1
+google.api_core.exceptions.BadRequest: 400 POST https://bigquery.googleapis.com/upload/bigquery/v2/projects/natural-nebula-377015/jobs?uploadType=multipart: Invalid field name "Unnamed: 3". Fields must contain only letters, numbers, and underscores, start with a letter or underscore, and be at most 300 characters long.
+```
+
 ## Cleanup
 ```
 gcloud storage buckets delete gs://$BUCKET

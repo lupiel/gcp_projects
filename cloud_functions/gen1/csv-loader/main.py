@@ -177,17 +177,18 @@ def main(event, context):
         print(f"File {FILE_NAME} not tracked.")
         return
 
-    # cloud_functions/csv-loader-v2/inbox/TABLE_NAME/data.csv
-    TABLE_NAME = FILE_NAME[len(INBOX_DIR)+1:].split("/")[0]
+    # cloud_functions/csv-loader/inbox/TABLE_NAME/data.csv
+    TABLE_NAME = FILE_NAME[len(INBOX_DIR)+1:].split("/")[0] # TABLE_NAME
     URI = f"gs://{BUCKET_NAME}/{FILE_NAME}"
-    print("TABLE_NAME:", TABLE_NAME)
-    print("URI:", URI)
     
     try:
         reload_scope(table_name=TABLE_NAME, uri=URI, load_timestamp=LOAD_TIMESTAMP)
         mv_archive(bucket_name=BUCKET_NAME, file_name=FILE_NAME, load_timestamp=LOAD_TIMESTAMP)
     except Exception:
             exc = traceback.format_exc()
-            LOG_URI = f"{INBOX_DIR}/log/{TABLE_NAME}/{FILE_NAME}_{LOAD_TIMESTAMP}.txt"
-            print(f'Error tracebak uploaded to {BUCKET_NAME}/{LOG_URI}')
+            FUNCTION_ROOT_DIR = "/".join(INBOX_DIR.split("/")[:-1]) # cloud_functions/csv-loader
+            FILE_STEM = FILE_NAME.split("/")[-1] # data.csv
+            load_ts = LOAD_TIMESTAMP.strftime("%Y%m%d_%H%M%S_%f")
+            LOG_URI = f"{FUNCTION_ROOT_DIR}/log/{TABLE_NAME}/{FILE_STEM}_{load_ts}.txt"
+            print(f'Error tracebak uploaded to gs://{BUCKET_NAME}/{LOG_URI}')
             storage.Client().get_bucket(BUCKET_NAME).blob(LOG_URI).upload_from_string(exc)
