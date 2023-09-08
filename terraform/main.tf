@@ -5,10 +5,7 @@ terraform {
     }
   }
 }
-provider "google" {
-  region  = "us-central1"
-  zone    = "us-central1-c"
-}
+
 resource "google_compute_instance" "terraform" {
   name         = "terraform"
   machine_type = "e2-standard-2"
