@@ -1,3 +1,11 @@
+## Dependency Graph
+```
+terraform graph | dot -Tsvg > graph.svg
+```
+![Dependency Graph](graph.svg "title")
+
+![Dependency Graph](architecture.png "title")
+
 https://developer.hashicorp.com/terraform/tutorials/gcp-get-started
 
 ```
@@ -448,11 +456,3 @@ PING 10.132.0.2 (10.132.0.2) 56(84) bytes of data.
 3 packets transmitted, 3 received, 0% packet loss, time 2028ms
 rtt min/avg/max/mdev = 0.034/0.049/0.058/0.010 ms
 ```
-
-## Dependency Graph
-```
-terraform graph | dot -Tsvg > graph.svg
-```
-![Dependency Graph](graph.svg "title")
-
-![Dependency Graph](architecture.png "title")
