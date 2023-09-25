@@ -1,4 +1,6 @@
+```
 VENV_NAME=venv-ocr
+```
 
 # install miniconda
 ```
