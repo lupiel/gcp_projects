@@ -10,7 +10,7 @@ BUCKET="bucket-name/hackathon"
 # List of table names to copy
 TABLES_FILE="tables.txt"
 TABLE_NAMES=($(cat ${TABLES_FILE}))
-# TABLE_NAMES=("ACE_historical_subbrand_calc_ACE_JP")
+# TABLE_NAMES=("test_table_name") # uncomment to test flow on one table
 
 for TABLE_NAME in "${TABLE_NAMES[@]}"
 do
